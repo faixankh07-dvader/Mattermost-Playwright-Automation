@@ -56,3 +56,40 @@ class MattermostAPI:
         r = self.session.get(f"{self.base}/channels/{channel_id}/members/{user_id}")
         r.raise_for_status()
         return r.json()
+
+    def list_public_channels(self, team_id: str) -> list:
+        r = self.session.get(
+            f"{self.base}/teams/{team_id}/channels",
+            params={"per_page": 200},
+        )
+        r.raise_for_status()
+        return r.json()
+
+    def create_user(self, username: str, password: str) -> dict:
+        r = self.session.post(
+            f"{self.base}/users",
+            json={"email": f"{username}@test.local", "username": username, "password": password},
+        )
+        r.raise_for_status()
+        return r.json()
+
+    def add_to_team(self, team_id: str, user_id: str) -> dict:
+        r = self.session.post(
+            f"{self.base}/teams/{team_id}/members",
+            json={"team_id": team_id, "user_id": user_id},
+        )
+        r.raise_for_status()
+        return r.json()
+
+    def set_team_admin(self, team_id: str, user_id: str, is_admin: bool) -> None:
+        r = self.session.put(
+            f"{self.base}/teams/{team_id}/members/{user_id}/schemeRoles",
+            json={"scheme_user": True, "scheme_admin": is_admin},
+        )
+        r.raise_for_status()
+
+    def deactivate_user(self, user_id: str) -> None:
+        r = self.session.delete(f"{self.base}/users/{user_id}")
+        r.raise_for_status()
+
+    

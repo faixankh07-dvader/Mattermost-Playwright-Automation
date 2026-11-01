@@ -1,6 +1,9 @@
 import os
 import re
+import uuid
+
 import pytest
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -50,3 +53,25 @@ def auth_state(browser, base_url, tmp_path_factory):
 def admin_page(new_context, auth_state):
     context = new_context(storage_state=auth_state(ADMIN_USER, ADMIN_PASS))
     return context.new_page()
+
+@pytest.fixture
+def make_user(api, team):
+    created = []
+
+    def _make(team_admin: bool = False):
+        username = f"auto{uuid.uuid4().hex[:8]}"
+        password = "Auto@12345"
+        user = api.create_user(username, password)
+        api.add_to_team(team["id"], user["id"])
+        if team_admin:
+            api.set_team_admin(team["id"], user["id"], True)
+        created.append(user["id"])
+        return username, password
+
+    yield _make
+
+    for user_id in created:
+        try:
+            api.deactivate_user(user_id)
+        except requests.HTTPError:
+            pass

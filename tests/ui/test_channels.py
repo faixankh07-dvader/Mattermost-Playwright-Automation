@@ -6,6 +6,7 @@ import requests
 from playwright.sync_api import expect
 
 from pages.channel_page import ChannelPage
+from utils.api_client import MattermostAPI
 
 
 @pytest.fixture
@@ -26,7 +27,7 @@ def cleanup_channel(api, team):
 
 
 @pytest.mark.tc("MMQA-T42")
-def test_create_public_channel(admin_page, api, team, channel_name, cleanup_channel):
+def test_create_public_channel(admin_page, api, team, channel_name, cleanup_channel, make_user, base_url):
     cleanup_channel.append(channel_name)
     channel = ChannelPage(admin_page)
 
@@ -43,3 +44,8 @@ def test_create_public_channel(admin_page, api, team, channel_name, cleanup_chan
     assert created["type"] == "O"  # O = public
     member = api.get_channel_member(created["id"], api.me["id"])
     assert member["scheme_admin"] is True  # creator Channel Admin banta hai
+
+    username, password = make_user()
+    member_api = MattermostAPI(base_url, username, password)
+    visible = [c["name"] for c in member_api.list_public_channels(team["id"])]
+    assert channel_name in visible
