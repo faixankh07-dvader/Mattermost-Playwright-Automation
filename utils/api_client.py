@@ -46,3 +46,13 @@ class MattermostAPI:
     def archive_channel(self, channel_id: str) -> None:
         r = self.session.delete(f"{self.base}/channels/{channel_id}")
         r.raise_for_status()
+
+    def get_channel_by_name(self, team_id: str, name: str) -> dict:
+        r = self.session.get(f"{self.base}/teams/{team_id}/channels/name/{name}")
+        r.raise_for_status()
+        return r.json()
+
+    def get_channel_member(self, channel_id: str, user_id: str) -> dict:
+        r = self.session.get(f"{self.base}/channels/{channel_id}/members/{user_id}")
+        r.raise_for_status()
+        return r.json()
