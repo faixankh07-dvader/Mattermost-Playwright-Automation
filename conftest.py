@@ -62,10 +62,11 @@ def make_user(api, team):
         username = f"auto{uuid.uuid4().hex[:8]}"
         password = "Auto@12345"
         user = api.create_user(username, password)
+        created.append(user["id"])
         api.add_to_team(team["id"], user["id"])
         if team_admin:
             api.set_team_admin(team["id"], user["id"], True)
-        created.append(user["id"])
+            assert api.get_team_member(team["id"], user["id"])["scheme_admin"] is True
         return username, password
 
     yield _make

@@ -92,4 +92,7 @@ class MattermostAPI:
         r = self.session.delete(f"{self.base}/users/{user_id}")
         r.raise_for_status()
 
-    
+    def get_team_member(self, team_id: str, user_id: str) -> dict:
+        r = self.session.get(f"{self.base}/teams/{team_id}/members/{user_id}")
+        r.raise_for_status()
+        return r.json()

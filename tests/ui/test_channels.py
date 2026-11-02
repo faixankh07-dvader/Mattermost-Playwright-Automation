@@ -49,3 +49,21 @@ def test_create_public_channel(admin_page, api, team, channel_name, cleanup_chan
     member_api = MattermostAPI(base_url, username, password)
     visible = [c["name"] for c in member_api.list_public_channels(team["id"])]
     assert channel_name in visible
+
+@pytest.mark.tc("MMQA-T42")
+def test_member_sees_new_public_channel_in_browse(
+    api, team, channel_name, cleanup_channel, make_user, auth_state, new_context
+):
+    cleanup_channel.append(channel_name)
+    api.create_channel(team["id"], channel_name, channel_name)
+
+    username, password = make_user()
+    context = new_context(storage_state=auth_state(username, password))
+    page = context.new_page()
+    channel = ChannelPage(page)
+
+    channel.open_team(team["name"])
+    channel.dismiss_onboarding()
+    channel.browse_channels(channel_name)
+
+    expect(channel.browse_row(channel_name)).to_be_visible()
