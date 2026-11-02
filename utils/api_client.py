@@ -96,3 +96,25 @@ class MattermostAPI:
         r = self.session.get(f"{self.base}/teams/{team_id}/members/{user_id}")
         r.raise_for_status()
         return r.json()
+
+    def create_post(self, channel_id: str, message: str) -> dict:
+        r = self.session.post(
+            f"{self.base}/posts",
+            json={"channel_id": channel_id, "message": message},
+        )
+        r.raise_for_status()
+        return r.json()
+
+    def get_post(self, post_id: str) -> dict:
+        r = self.session.get(f"{self.base}/posts/{post_id}")
+        r.raise_for_status()
+        return r.json()
+
+    def get_channel_posts(self, channel_id: str) -> list:
+        r = self.session.get(
+            f"{self.base}/channels/{channel_id}/posts",
+            params={"per_page": 200},
+        )
+        r.raise_for_status()
+        data = r.json()
+        return [data["posts"][post_id] for post_id in data["order"]]

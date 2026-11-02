@@ -76,3 +76,13 @@ def make_user(api, team):
             api.deactivate_user(user_id)
         except requests.HTTPError:
             pass
+
+@pytest.fixture
+def message_channel(api, team):
+    suffix = uuid.uuid4().hex[:8]
+    channel = api.create_channel(team["id"], f"msg-{suffix}", f"Msg {suffix}")
+    yield channel
+    try:
+        api.archive_channel(channel["id"])
+    except requests.HTTPError:
+        pass
