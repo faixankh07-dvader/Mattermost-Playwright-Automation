@@ -24,8 +24,11 @@ def test_login_fails_with_wrong_password(page: Page):
 
 @pytest.mark.tc("MMQA-T15")
 def test_login_blocked_with_empty_fields(page: Page):
-    LoginPage(page).open()
-    page.get_by_role("button", name="Log in").click(force=True)
+    login_page = LoginPage(page)
+    login_page.open()
+    expect(login_page.username).to_be_visible()
+    login_page.username.press("Enter")
+    expect(page.get_by_text("Please enter your email or username")).to_be_visible()
     expect(page).to_have_url(re.compile(r"/login"))
 
 @pytest.mark.tc("MMQA-T16")
