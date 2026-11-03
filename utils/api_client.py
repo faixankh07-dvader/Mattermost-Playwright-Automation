@@ -118,3 +118,8 @@ class MattermostAPI:
         r.raise_for_status()
         data = r.json()
         return [data["posts"][post_id] for post_id in data["order"]]
+
+    def get_user_by_id(self, user_id: str) -> dict:
+        r = self.session.get(f"{self.base}/users/{user_id}")
+        r.raise_for_status()
+        return r.json()

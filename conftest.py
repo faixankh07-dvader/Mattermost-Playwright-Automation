@@ -72,10 +72,8 @@ def make_user(api, team):
     yield _make
 
     for user_id in created:
-        try:
-            api.deactivate_user(user_id)
-        except requests.HTTPError:
-            pass
+        api.deactivate_user(user_id)
+        assert api.get_user_by_id(user_id)["delete_at"] != 0
 
 @pytest.fixture
 def message_channel(api, team):
