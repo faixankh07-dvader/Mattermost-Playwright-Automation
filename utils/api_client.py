@@ -123,3 +123,10 @@ class MattermostAPI:
         r = self.session.get(f"{self.base}/users/{user_id}")
         r.raise_for_status()
         return r.json()
+
+    def set_channel_admin(self, channel_id: str, user_id: str, is_admin: bool) -> None:
+        r = self.session.put(
+            f"{self.base}/channels/{channel_id}/members/{user_id}/schemeRoles",
+            json={"scheme_user": True, "scheme_admin": is_admin},
+        )
+        r.raise_for_status()

@@ -21,17 +21,17 @@ class MessagePanel:
     def post_text(self, text: str):
         return self.channel_view.locator("p").filter(has_text=text)
 
-    def _open_post_menu(self, post_id: str, text: str):
+    def open_post_menu(self, post_id: str, text: str):
         self.post_text(text).hover()
         self.page.get_by_test_id(f"PostDotMenu-Button-{post_id}").click()
 
     def edit_post(self, post_id: str, old_text: str, new_text: str):
-        self._open_post_menu(post_id, old_text)
+        self.open_post_menu(post_id, old_text)
         self.page.get_by_test_id(f"edit_post_{post_id}").click()
         self.edit_box.fill(new_text)
         self.channel_view.get_by_role("button", name="Save").click()
 
     def delete_post(self, post_id: str, text: str):
-        self._open_post_menu(post_id, text)
+        self.open_post_menu(post_id, text)
         self.page.get_by_test_id(f"delete_post_{post_id}").click()
         self.confirm_delete.click()

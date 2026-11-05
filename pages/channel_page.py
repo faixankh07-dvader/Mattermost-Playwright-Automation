@@ -35,10 +35,8 @@ class ChannelPage:
         return self.page.get_by_test_id(f"ChannelRow-{name}")
 
     def dismiss_onboarding(self):
-        """New users get an onboarding overlay that blocks clicks; close it if it shows up."""
-        try:
-            self.onboarding_overlay.wait_for(state="visible", timeout=5000)
-        except PlaywrightTimeoutError:
-            return  # existing user, no overlay
-        self.onboarding_overlay.click(position={"x": 5, "y": 5})
-        expect(self.onboarding_overlay).to_be_hidden()
+        """Register a handler: whenever the onboarding overlay blocks an action, click it away."""
+        self.page.add_locator_handler(
+            self.onboarding_overlay,
+            lambda: self.onboarding_overlay.click(position={"x": 5, "y": 5}),
+        )
