@@ -1,5 +1,6 @@
 import re
 from playwright.sync_api import Page, expect, TimeoutError as PlaywrightTimeoutError
+from utils.ui_popups import install_product_notice_handler
 
 class ChannelPage:
     def __init__(self, page: Page):
@@ -36,6 +37,7 @@ class ChannelPage:
 
     def dismiss_onboarding(self):
         """Register a handler: whenever the onboarding overlay blocks an action, click it away."""
+        install_product_notice_handler(self.page)
         self.page.add_locator_handler(
             self.onboarding_overlay,
             lambda: self.onboarding_overlay.click(position={"x": 5, "y": 5}),

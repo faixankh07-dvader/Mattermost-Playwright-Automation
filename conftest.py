@@ -10,6 +10,7 @@ load_dotenv()
 
 from utils.api_client import MattermostAPI
 from utils.ui_auth import login
+from utils.ui_popups import install_product_notice_handler
 
 ADMIN_USER = os.environ["MM_ADMIN_USER"]
 ADMIN_PASS = os.environ["MM_ADMIN_PASS"]
@@ -52,7 +53,9 @@ def auth_state(browser, base_url, tmp_path_factory):
 @pytest.fixture
 def admin_page(new_context, auth_state):
     context = new_context(storage_state=auth_state(ADMIN_USER, ADMIN_PASS))
-    return context.new_page()
+    page = context.new_page()
+    install_product_notice_handler(page)
+    return page
 
 @pytest.fixture
 def make_user(api, team):
