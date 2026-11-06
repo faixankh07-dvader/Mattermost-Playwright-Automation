@@ -97,11 +97,11 @@ class MattermostAPI:
         r.raise_for_status()
         return r.json()
 
-    def create_post(self, channel_id: str, message: str) -> dict:
-        r = self.session.post(
-            f"{self.base}/posts",
-            json={"channel_id": channel_id, "message": message},
-        )
+    def create_post(self, channel_id: str, message: str, file_ids: list | None = None) -> dict:
+        payload = {"channel_id": channel_id, "message": message}
+        if file_ids:
+            payload["file_ids"] = file_ids
+        r = self.session.post(f"{self.base}/posts", json=payload)
         r.raise_for_status()
         return r.json()
 
@@ -166,4 +166,18 @@ class MattermostAPI:
 
     def delete_team(self, team_id: str) -> None:
         r = self.session.delete(f"{self.base}/teams/{team_id}")
+        r.raise_for_status()
+
+    def upload_file(self, channel_id: str, filename: str, content: bytes,
+                    mime: str = "application/octet-stream") -> dict:
+        r = self.session.post(
+            f"{self.base}/files",
+            data={"channel_id": channel_id},
+            files={"files": (filename, content, mime)},
+        )
+        r.raise_for_status()
+        return r.json()["file_infos"][0]
+
+    def remove_from_channel(self, channel_id: str, user_id: str) -> None:
+        r = self.session.delete(f"{self.base}/channels/{channel_id}/members/{user_id}")
         r.raise_for_status()
