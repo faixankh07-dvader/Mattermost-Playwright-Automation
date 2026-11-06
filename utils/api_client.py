@@ -130,3 +130,23 @@ class MattermostAPI:
             json={"scheme_user": True, "scheme_admin": is_admin},
         )
         r.raise_for_status()
+
+    def search_posts(self, team_id: str, terms: str) -> list:
+        r = self.session.post(
+            f"{self.base}/teams/{team_id}/posts/search",
+            json={"terms": terms, "is_or_search": False},
+        )
+        r.raise_for_status()
+        data = r.json()
+        order = data.get("order") or []
+        posts = data.get("posts") or {}
+        return [posts[post_id] for post_id in order]
+
+    def edit_post(self, post_id: str, message: str) -> dict:
+        r = self.session.put(f"{self.base}/posts/{post_id}/patch", json={"message": message})
+        r.raise_for_status()
+        return r.json()
+
+    def delete_post(self, post_id: str) -> None:
+        r = self.session.delete(f"{self.base}/posts/{post_id}")
+        r.raise_for_status()

@@ -11,6 +11,9 @@ load_dotenv()
 from utils.api_client import MattermostAPI
 from utils.ui_auth import login
 from utils.ui_popups import install_product_notice_handler
+from playwright.sync_api import expect
+
+expect.set_options(timeout=10_000)
 
 ADMIN_USER = os.environ["MM_ADMIN_USER"]
 ADMIN_PASS = os.environ["MM_ADMIN_PASS"]

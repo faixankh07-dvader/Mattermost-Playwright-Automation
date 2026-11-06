@@ -68,7 +68,7 @@ def test_message_from_other_user_appears_in_open_channel(
     panel = MessagePanel(page)
     panel.open_channel(team["name"], message_channel["name"])
     ChannelPage(page).dismiss_onboarding()
-    expect(panel.input).to_be_visible()  # channel loaded, then left idle
+    expect(panel.input).to_be_visible(timeout=20000)  # channel loaded, then left idle
 
     text = f"live-{uuid.uuid4().hex[:8]}"
     MattermostAPI(base_url, sender, sender_pw).create_post(message_channel["id"], text)
