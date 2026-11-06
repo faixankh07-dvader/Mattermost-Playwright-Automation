@@ -59,3 +59,36 @@ def test_message_length_boundaries(admin_page, api, team, message_channel, text,
 
     user_posts = [p for p in api.get_channel_posts(message_channel["id"]) if p["type"] == ""]
     assert len(user_posts) == (2 if should_post else 1)
+
+@pytest.mark.tc("MMQA-T49")
+@pytest.mark.parametrize(
+    "text, kind",
+    [
+        pytest.param("<script>alert(1)</script>", "script", id="script-tag"),
+        pytest.param("<b>bold</b>", "html", id="raw-html"),
+        pytest.param("**bold**", "markdown", id="markdown-bold"),
+    ],
+)
+def test_message_content_renders_safely(admin_page, team, message_channel, text, kind):
+    dialogs = []
+
+    def on_dialog(dialog):
+        dialogs.append(dialog.message)
+        dialog.dismiss()
+
+    admin_page.on("dialog", on_dialog)
+    panel = MessagePanel(admin_page)
+    panel.open_channel(team["name"], message_channel["name"])
+    panel.send(text)
+
+    # a sentinel posted afterwards proves the first message has been rendered
+    sentinel = f"sentinel-{uuid.uuid4().hex[:6]}"
+    panel.send(sentinel)
+    expect(panel.post_text(sentinel)).to_be_visible()
+
+    assert dialogs == []
+    expect(panel.channel_view.locator("script")).to_have_count(0)
+    if kind == "html":
+        expect(panel.channel_view.locator("b")).to_have_count(0)
+    if kind == "markdown":
+        expect(panel.channel_view.locator("strong").filter(has_text="bold")).to_have_count(1)
