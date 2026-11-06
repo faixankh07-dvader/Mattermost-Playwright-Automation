@@ -90,3 +90,14 @@ def message_channel(api, team):
         api.archive_channel(channel["id"])
     except requests.HTTPError:
         pass
+
+@pytest.fixture
+def new_user(api, make_user, base_url):
+    """A throwaway user plus a ready-to-use API session logged in as them."""
+
+    def _new(team_admin: bool = False):
+        username, password = make_user(team_admin=team_admin)
+        user_id = api.get_user(username)["id"]
+        return username, user_id, MattermostAPI(base_url, username, password)
+
+    return _new

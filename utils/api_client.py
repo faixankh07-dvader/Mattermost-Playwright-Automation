@@ -150,3 +150,20 @@ class MattermostAPI:
     def delete_post(self, post_id: str) -> None:
         r = self.session.delete(f"{self.base}/posts/{post_id}")
         r.raise_for_status()
+
+
+    def request(self, method: str, path: str, **kwargs) -> requests.Response:
+        """Raw call that does not raise on 4xx, for negative tests that assert a status code."""
+        return self.session.request(method, f"{self.base}{path}", **kwargs)
+
+    def create_team(self, name: str, display_name: str) -> dict:
+        r = self.session.post(
+            f"{self.base}/teams",
+            json={"name": name, "display_name": display_name, "type": "I"},
+        )
+        r.raise_for_status()
+        return r.json()
+
+    def delete_team(self, team_id: str) -> None:
+        r = self.session.delete(f"{self.base}/teams/{team_id}")
+        r.raise_for_status()
