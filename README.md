@@ -72,10 +72,12 @@ pytest tests\api -v                         # REST-level tests only, a few secon
 pytest tests\ui\test_search.py -v           # one file
 pytest -k logout -v                         # by name
 pytest tests\ui -v --headed --slowmo 500    # watch the browser
+pytest -v --html=reports\report.html --self-contained-html   # same, plus an HTML report
 ```
 
 On failure, a screenshot and a trace are kept in `test-results/`.
 Open a trace with `playwright show-trace test-results/<folder>/trace.zip`.
+The HTML report is written to `reports\report.html` (git ignores it).
 
 Regenerate the traceability table after adding or retagging tests:
 
@@ -108,7 +110,6 @@ python scripts/traceability.py
 ## Planned
 
 - GitHub Actions run with Docker Compose
-- HTML test report
 - Parallel execution
 
 ## Author
