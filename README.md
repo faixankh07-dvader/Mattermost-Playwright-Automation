@@ -1,176 +1,116 @@
-# File Automator — Automated File Operating & Text-Parsing Script
+# Mattermost test automation (Playwright + Python)
 
-A background automation utility that organizes a messy directory and mines flat log files for structured data (emails, transaction IDs, IP addresses), writing everything to a single clean CSV.
+Automated regression tests for a self-hosted Mattermost, built from the manual test suite in
+[Mattermost-Manual-QA](https://github.com/faixankh07-dvader/Mattermost-Manual-QA).
+Every automated test carries the ID of the manual test case it covers, and
+[`docs/traceability.md`](docs/traceability.md) maps all 71 manual cases to their automated tests.
 
-Built entirely on Python's standard library — no external dependencies.
+**Status:** 30 of the 71 manual cases are automated by 49 pytest tests (35 UI, 14 API).
+The generated traceability table is the source of truth if these numbers drift.
 
-## Features
+## Stack
 
-- **Auto-sorts files by extension** into category subfolders (`Documents/`, `Images/`, `Logs/`, `Spreadsheets/`, `Scripts/`, `Archives/`, `Videos/`, `Other/`)
-- **Extracts structured data** from `.log`/`.txt` files using regex: email addresses, transaction IDs, IP addresses
-- **Writes a master CSV** with full traceability — every row records the source file and exact line number it came from
-- **Persistent activity log** for every run, so it's safe to schedule unattended (cron / Task Scheduler)
-- **Dry-run mode** to preview every action before anything is moved or written
-- **Collision-safe** — never silently overwrites a file; auto-renames with a timestamp on conflict
+- Python, pytest, pytest-playwright (Chromium), requests, python-dotenv
+- Mattermost Enterprise Edition 11.7.0 with Postgres 18, run locally with Docker Compose at `http://localhost:8065`
 
-## Requirements
+## Project layout
 
-- Python 3.9+
-- No third-party packages — uses only `os`, `shutil`, `re`, `pathlib`, `csv`, `logging`, `argparse`
+```
+.
+├── conftest.py            fixtures: api, team, make_user, new_user, auth_state, admin_page, message_channel
+├── pytest.ini             base_url, trace/screenshot on failure, the `tc` marker
+├── requirements.txt
+├── .env.example           copy to .env and fill in
+├── docs/
+│   ├── manual_cases.csv   all 71 manual cases (id, epic, title)
+│   └── traceability.md    generated, do not edit by hand
+├── pages/                 Page Objects: login, channel, message panel, search
+├── scripts/traceability.py
+├── tests/
+│   ├── api/               REST-level tests: smoke, permissions, search, files
+│   └── ui/                Playwright UI tests
+└── utils/                 api_client.py (REST client), ui_auth.py (login), ui_popups.py
+```
 
-## How to Run
+## Setup
 
-### 1. Clone the repository
+### 1. Mattermost
+
+Run Mattermost with Docker Compose and make sure the **Site URL is `http://localhost:8065`**
+(for the official compose setup this is `MM_SERVICESETTINGS_SITEURL` in the compose `.env`).
+With any other value the WebSocket handshake is rejected with HTTP 403 and the real-time tests fail
+(see [Findings](#findings)).
+
+The tests also expect:
+
+- a system admin account and a team that already exist
+- the default permission scheme (the permission tests depend on it)
+
+### 2. This project
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+python -m venv .venv
+.venv\Scripts\activate          # Windows; on macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+playwright install chromium
+copy .env.example .env          # then edit .env
 ```
 
-### 2. Check your Python version
+`.env` variables:
 
-Requires Python 3.9+. No installation of packages needed — everything used is standard library.
-
-```bash
-python --version
-```
-
-> On Windows, use `python`. On macOS/Linux, this is usually `python3`.
-
-### 3. Create a source folder with files to organize
-
-If you don't already have a folder of files to test with, make one:
-
-**macOS/Linux:**
-```bash
-mkdir unsorted_data
-echo "Contact us at test@example.com or txn TXN-12345AB" > unsorted_data/sample.log
-```
-
-**Windows (PowerShell):**
-```powershell
-mkdir unsorted_data
-Set-Content -Path unsorted_data\sample.log -Value "Contact us at test@example.com or txn TXN-12345AB" -Encoding utf8
-```
-
-> ⚠️ On Windows PowerShell specifically, always use `Set-Content -Encoding utf8` rather than `echo >` when creating log files — see the [Notes on Windows / PowerShell](#notes-on-windows--powershell) section below for why.
-
-### 4. Preview with a dry run (recommended first step)
-
-This shows exactly what the script *would* do — no files are moved, nothing is written.
-
-```bash
-python file_automator.py --source ./unsorted_data --dest ./organized --dry-run
-```
-
-### 5. Run it for real
-
-```bash
-python file_automator.py --source ./unsorted_data --dest ./organized
-```
-
-### 6. Check the results
-
-```bash
-# macOS/Linux
-ls -R organized
-cat organized/master_extracted_data.csv
-
-# Windows PowerShell
-Get-ChildItem organized -Recurse
-type organized\master_extracted_data.csv
-```
-
-You should see your files sorted into category subfolders, plus `master_extracted_data.csv` containing every extracted email, transaction ID, and IP address, along with `file_automator_activity.log` recording every action taken.
-
-## Usage
-
-```bash
-# Basic run
-python file_automator.py --source ./unsorted_data --dest ./organized
-
-# Preview only — nothing is moved or written
-python file_automator.py --source ./unsorted_data --dest ./organized --dry-run
-
-# Parse logs only, skip sorting
-python file_automator.py --source ./unsorted_data --no-sort
-
-# Suppress console output (activity log still written)
-python file_automator.py --source ./unsorted_data --quiet
-```
-
-### CLI options
-
-| Flag | Description |
+| Variable | Meaning |
 |---|---|
-| `--source` | **(required)** Path to the unorganized source directory |
-| `--dest` | Destination root directory (default: `./organized`) |
-| `--no-sort` | Skip file sorting, only parse logs |
-| `--dry-run` | Preview actions without moving/writing anything |
-| `--quiet` | Suppress console output |
+| `MM_ADMIN_USER` | system admin username |
+| `MM_ADMIN_PASS` | its password |
+| `MM_TEAM` | URL name of the team the tests run in |
 
-## Output
-
-Running the script produces:
-
-```
-organized/
-├── Documents/
-├── Images/
-├── Logs/
-├── Scripts/
-├── Spreadsheets/
-├── Archives/
-├── Videos/
-├── Other/
-├── file_automator_activity.log
-└── master_extracted_data.csv
-```
-
-**`master_extracted_data.csv`** columns:
-
-| Column | Description |
-|---|---|
-| `source_file` | Name of the log/text file the match came from |
-| `line_number` | Line in that file where the match was found |
-| `match_type` | `email`, `transaction_id`, or `ip_address` |
-| `match_value` | The matched text |
-| `extracted_at` | Timestamp of extraction |
-
-## Example
+## Running the tests
 
 ```bash
-$ python file_automator.py --source ./unsorted_data --dest ./organized
-INFO | Found 8 file(s) in source directory: unsorted_data
-INFO | Moved access.log -> Logs/access.log
-INFO | Moved report.pdf -> Documents/report.pdf
-INFO | Parsed access.log: 4 match(es) found
-INFO | Wrote 4 row(s) to master CSV: organized/master_extracted_data.csv
-INFO | Run complete.
+pytest -v                                   # everything (about 7-8 minutes, runs serially)
+pytest tests\api -v                         # REST-level tests only, a few seconds
+pytest tests\ui\test_search.py -v           # one file
+pytest -k logout -v                         # by name
+pytest tests\ui -v --headed --slowmo 500    # watch the browser
 ```
 
-## Configuration
+On failure, a screenshot and a trace are kept in `test-results/`.
+Open a trace with `playwright show-trace test-results/<folder>/trace.zip`.
 
-Extension-to-folder mapping and regex patterns are defined at the top of `file_automator.py` (`EXTENSION_MAP` and `PATTERNS`), so both can be extended without touching the core logic.
+Regenerate the traceability table after adding or retagging tests:
 
-## Real-world use cases
-
-- Scheduled cleanup of shared drives or download folders
-- Reconciling transaction IDs and customer emails from payment/gateway logs
-- First-pass security monitoring — flagging IPs/emails in auth logs before a full SIEM review
-- Support-ticket log triage
-- Pre-migration cleanup of a messy legacy file share
-
-## Notes on Windows / PowerShell
-
-If you're testing on Windows using PowerShell, be aware that `echo "text" > file.log` writes **UTF-16** by default, while this script reads files as **UTF-8** — mismatched encoding will cause regex matches to silently fail. Use:
-
-```powershell
-Set-Content -Path file.log -Value "your text" -Encoding utf8
+```bash
+python scripts/traceability.py
 ```
 
-to guarantee UTF-8 output when creating test log files.
+## How the tests are built
 
-## License
+- **API for setup, UI for what is under test.** Users, channels, posts and files are created through the REST API, so a UI test only exercises the behaviour it is about.
+- **Throwaway data.** Every test creates uniquely named users and channels. Teardown archives the channels and deactivates the users, and checks that the deactivation really happened.
+- **One UI login per user.** `auth_state` logs a user in through the UI once and reuses the saved session.
+- **Negative results are paired with a control.** Before asserting that something is hidden or forbidden, the test first shows that the same thing works for an allowed user, so a wrong locator or setup cannot make the test pass by accident. The real-time tests run a `live` and an `after-refresh` variant for the same reason.
+- **No sleeps.** To prove that nothing happened (for example a rejected message), the test posts a sentinel message afterwards and waits for it.
+- **Popups are handled by locator handlers.** New users get an onboarding overlay and Mattermost shows product-notice modals at unpredictable moments. Playwright locator handlers dismiss them when they block an action.
+- **Locators** prefer roles and test ids, and are scoped to the element they belong to (for example the confirmation dialog, not the whole page).
 
-For academic/project use.
+## Findings
+
+**Three apparent defects were an environment problem.** Two manual defect reports and a note on a third test case described the UI updating only after a manual refresh (new messages, a demoted Channel Admin still offered "Delete", unread state not syncing). I wrote the automated tests as expected failures first. DevTools then showed the WebSocket handshake failing with HTTP 403, and the Site URL still had the Docker default (`https://mm.example.com`) while the app was opened at `http://localhost:8065`. After correcting the Site URL the WebSocket connected (101), the same tests started passing, and the expected-failure markers were removed. The reports were closed as environment misconfiguration.
+
+## Known limitations
+
+- 30 of 71 manual cases are automated. Cases left out on purpose, with the reason, are noted in the traceability table (account lockout, email delivery, network interruption, server-wide settings).
+- The API tests check the REST permission model. They do not replace the UI checks in the manual cases.
+- T49 covers 3 of its 4 example inputs; the emoji example is not automated.
+- T16: the browser back-button step stays a manual check.
+- The suite assumes one local Mattermost instance and runs serially.
+
+## Planned
+
+- GitHub Actions run with Docker Compose
+- HTML test report
+- Parallel execution
+
+## Author
+
+M Faizan Khan, [github.com/faixankh07-dvader](https://github.com/faixankh07-dvader)
