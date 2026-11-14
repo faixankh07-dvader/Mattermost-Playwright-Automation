@@ -48,7 +48,6 @@ def test_delete_option_removed_after_channel_admin_demotion(
 
 
 @pytest.mark.tc("MMQA-T1")
-@pytest.mark.tc("MMQA-T52")
 @pytest.mark.parametrize(
     "refresh",
     [

@@ -1,0 +1,72 @@
+id,epic,title
+MMQA-T1,EPIC3,Verify new messages render live in channel view without manual refresh
+MMQA-T2,EPIC1,Verify successful signup with valid credentials
+MMQA-T3,EPIC1,Verify signup fails with invalid email format
+MMQA-T4,EPIC1,Verify signup fails with duplicate email
+MMQA-T5,EPIC1,Verify signup fails with duplicate username
+MMQA-T6,EPIC1,Verify username field rejects invalid characters
+MMQA-T7,EPIC1,Verify password minimum length boundary
+MMQA-T8,EPIC1,Verify password maximum length boundary (72 chars)
+MMQA-T9,EPIC1,Verify signup blocked when Open Server setting is disabled
+MMQA-T10,EPIC1,Verify Create account button stays disabled until all conditions met
+MMQA-T11,EPIC1,Verify successful login with valid credentials
+MMQA-T12,EPIC1,Verify login fails with incorrect password
+MMQA-T13,EPIC1,Verify login fails with non-existent username/email
+MMQA-T14,EPIC1,Verify account lockout after 5 failed login attempts requires password reset
+MMQA-T15,EPIC1,Verify empty field validation on login form
+MMQA-T16,EPIC1,Verify logout terminates session correctly
+MMQA-T17,EPIC1,verify session persists across page refresh while logged in
+MMQA-T18,EPIC1,Verify behavior when logging in from a second browser/device
+MMQA-T19,EPIC1,"Verify ""Forgot password"" flow sends reset instructions"
+MMQA-T20,EPIC1,Verify expired/invalid reset link is rejected
+MMQA-T21,EPIC2,Verify System Admin can access System Console
+MMQA-T22,EPIC2,Verify System Admin can create/archive teams
+MMQA-T23,EPIC2,Verify System Admin can view and manage all users across all teams
+MMQA-T24,EPIC2,Verify System Admin can change any user's role (promote/demote)
+MMQA-T25,EPIC2,Verify System Admin can modify server-wide settings (e.g. Open Server toggle)
+MMQA-T26,EPIC2,Verify System Admin can deactivate a user account
+MMQA-T27,EPIC2,Verify Team Admin can manage team members (add/remove)
+MMQA-T28,EPIC2,Verify Team Admin CANNOT access System Console
+MMQA-T29,EPIC2,Verify Team Admin can create/archive channels within their team
+MMQA-T30,EPIC2,Verify Team Admin CANNOT manage users/settings outside their own team
+MMQA-T31,EPIC2,Verify Team Admin can promote a Member to Channel Admin within their team
+MMQA-T32,EPIC2,Verify Member CANNOT access System Console
+MMQA-T33,EPIC2,Verify Member CANNOT access Team Admin-only settings
+MMQA-T34,EPIC2,Verify a Member (non-creator) can archive a public channel per configured permission scheme
+MMQA-T35,EPIC2,Verify regular Member cannot unarchive a channel (restricted to Team Admin/System Admin)
+MMQA-T36,EPIC2,Verify Member cannot remove other members from a channel
+MMQA-T37,EPIC2,Verify Member CAN create a public channel
+MMQA-T38,EPIC2,Verify Member cannot see a private channel they are not a member of
+MMQA-T39,EPIC2,Verify Channel Admin can rename/archive the specific channel
+MMQA-T40,EPIC2,Verify Channel Admin permissions do NOT extend to other channels
+MMQA-T41,EPIC2,Verify a demoted Channel Admin immediately loses elevated permissions
+MMQA-T42,EPIC3,Verify a user can create a public channel and becomes its Channel Admin
+MMQA-T43,EPIC3,"Channel Name Validation, Including Duplicates"
+MMQA-T44,EPIC3,Verify converting a public channel to private preserves access and hides it from non-members
+MMQA-T45,EPIC3,Verify a removed member immediately loses access to a private channel
+MMQA-T46,EPIC3,Verify leave and rejoin behavior for public and private channels
+MMQA-T47,EPIC3,Verify member count consistency across UI surfaces after membership changes
+MMQA-T48,EPIC3,Verify Message input boundaries
+MMQA-T49,EPIC3,verify Message Content Renders Safely
+MMQA-T50,EPIC3,verifying editing own message
+MMQA-T51,EPIC3,Verify deleting own message
+MMQA-T52,EPIC3,Edits and deletions propagate live to open sessions
+MMQA-T53,EPIC3,Client Recovers Missed Messages After a Network Interruption
+MMQA-T54,EPIC3,Reply in a Thread
+MMQA-T55,EPIC3,Delete a root post that has replies
+MMQA-T56,EPIC4,VERIFY @mention triggers a notification and appears in Recent Mentions
+MMQA-T57,EPIC4,Verify @mentioning a user not in the channel does not notify them or leak channel visibility
+MMQA-T58,EPIC4,Verify @here notifies only currently-online members
+MMQA-T59,EPIC4,Verify @all notifies all channel members
+MMQA-T60,EPIC4,Verify channel mute suppresses message notifications
+MMQA-T61,EPIC4,Verify per-channel notification override differs from global default
+MMQA-T62,EPIC4,Verify unread message count updates and clears correctly
+MMQA-T63,EPIC4,Verify unread state syncs correctly across multiple sessions of the same user
+MMQA-T64,EPIC5,Verify basic message search returns accurate results and jump-to-message navigation works
+MMQA-T65,EPIC5,"Verify in:channel and from:user search filters narrow results correctly, individually and combined"
+MMQA-T66,EPIC5,Verify search does not return results from a private channel the user is not a member of
+MMQA-T67,EPIC5,Verify search index reflects message edits and deletions
+MMQA-T68,EPIC5,"Verify file upload and retrieval preserves filename, type, and content integrity"
+MMQA-T69,EPIC5,Verify file upload size and type boundaries are enforced correctly
+MMQA-T70,EPIC5,Verify a removed member loses access to previously shared files via direct URL
+MMQA-T71,EPIC5,Verify a user who was never a member cannot access a shared file via direct URL
